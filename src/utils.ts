@@ -96,27 +96,39 @@ export async function getWorkflowRunStatus() {
     run_id: parseInt(runInfo.runId || "0"),
   });
 
-  const job = workflowJobs.data.jobs.find(
-    (job) => job.name === process.env.GITHUB_JOB
-  );
-
   let lastStep;
-  const stoppedStep = job?.steps?.find(
-    (step) =>
-      step.conclusion === "failure" ||
-      step.conclusion === "timed_out" ||
-      step.conclusion === "cancelled" ||
-      step.conclusion === "action_required"
-  );
+  let jobStartDate;
 
-  if (stoppedStep) {
-    lastStep = stoppedStep;
-  } else {
-    lastStep = job?.steps?.reverse().find((step) => step.status === "completed" && step.conclusion !== 'skipped');
+  let abort = false;
+  for(let job of workflowJobs.data.jobs) {
+    if (!job.steps) {
+      continue;
+    }
+    for(let step of job.steps) {
+      // check if current step still running
+      if (step.completed_at !== null) {
+        lastStep = step;
+        jobStartDate = job.started_at;
+        // Some step/job has failed. Get out from here.
+        if (step.conclusion !== "success" && step.conclusion !== "skipped") {
+            abort = true;
+            break;
+        }
+       /**
+        * If nothing has failed, so we have a success scenario
+        * @note ignoring skipped cases.
+        */
+        lastStep.conclusion = "success";
+      }
+    }
+    // // Some step/job has failed. Get out from here.
+    if (abort) {
+      break;
+    }
   }
+  const startTime = moment(jobStartDate, moment.ISO_8601);
+  const endTime = moment(lastStep?.completed_at, moment.ISO_8601); 
 
-  const startTime = moment(job?.started_at, moment.ISO_8601);
-  const endTime = moment(lastStep?.completed_at, moment.ISO_8601);
   return {
     elapsedSeconds: endTime.diff(startTime, "seconds"),
     conclusion: lastStep?.conclusion,
