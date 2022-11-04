@@ -1,11 +1,12 @@
 import { getInput } from "@actions/core";
-import { OctokitResponse, ReposGetCommitResponseData } from "@octokit/types";
 
 import { WebhookBody } from "../models";
 import { CONCLUSION_THEMES } from "../constants";
+import { RestEndpointMethodTypes } from "@octokit/rest";
+
 
 export function formatCompactLayout(
-  commit: OctokitResponse<ReposGetCommitResponseData>,
+  commit: RestEndpointMethodTypes["repos"]["getCommit"]["response"],
   conclusion: string,
   elapsedSeconds?: number
 ) {
@@ -14,6 +15,7 @@ export function formatCompactLayout(
   const branch = process.env.GITHUB_REF?.replace('refs/heads/', '');
   const runLink = `${repoUrl}/actions/runs/${process.env.GITHUB_RUN_ID}`;
   const webhookBody = new WebhookBody();
+  webhookBody.correlationId = commit.data.sha + getInput("card-id");
 
   // Set status and elapsedSeconds
   let labels = `\`${conclusion.toUpperCase()}\``;
@@ -33,7 +35,7 @@ export function formatCompactLayout(
   webhookBody.text =
     `${labels} &nbsp; ${process.env.GITHUB_WORKFLOW} [#${process.env.GITHUB_RUN_NUMBER}](${runLink}) ` +
     `(${branch}) on [${process.env.GITHUB_REPOSITORY}](${repoUrl}) ` +
-    `by [@${author.login}](${author.html_url})`;
+    `by [@${author?.login}](${author?.html_url})`;
 
   return webhookBody;
 }

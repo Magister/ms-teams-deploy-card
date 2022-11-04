@@ -12,6 +12,9 @@ inputs:
   github-token:
     description: Github token
     required: true
+  card-id:
+    description: Card ID
+    required: false
   environment:
     description: Name of the environment (won't be included in the card if none)
     required: false

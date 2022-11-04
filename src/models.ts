@@ -33,5 +33,6 @@ export class WebhookBody {
   summary: string = "Github Actions CI";
   text?: string;
   themeColor: string = "FFF49C";
+  correlationId?: string;
   sections: CardSection[] = [];
 }

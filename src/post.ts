@@ -17,7 +17,7 @@ try {
     ) {
       formatAndNotify(
         "exit",
-        workflowRunStatus.conclusion,
+        workflowRunStatus.conclusion || 'unknown',
         workflowRunStatus.elapsedSeconds
       );
     } else {
@@ -25,5 +25,11 @@ try {
     }
   }, 2000);
 } catch (error) {
-  setFailed(error.message);
+  let message
+  if (error instanceof Error) {
+    message = error.message
+  } else {
+    message = String(error)
+  }
+  setFailed(message);
 }

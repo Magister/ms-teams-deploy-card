@@ -1,16 +1,16 @@
 import moment from "moment-timezone";
 import { getInput } from "@actions/core";
-import { OctokitResponse, ReposGetCommitResponseData } from "@octokit/types";
 
 import { WebhookBody } from "../models";
 import { CONCLUSION_THEMES } from "../constants";
 import { renderActions } from "../utils";
+import { RestEndpointMethodTypes } from "@octokit/rest";
 
 export const OCTOCAT_LOGO_URL =
   "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png";
 
 export function formatCozyLayout(
-  commit: OctokitResponse<ReposGetCommitResponseData>,
+  commit: RestEndpointMethodTypes["repos"]["getCommit"]["response"],
   conclusion: string,
   elapsedSeconds?: number
 ) {
@@ -19,6 +19,7 @@ export function formatCozyLayout(
     .tz(timezone)
     .format("dddd, MMMM Do YYYY, h:mm:ss a z");
   const webhookBody = new WebhookBody();
+  webhookBody.correlationId = commit.data.sha + getInput("card-id");
   const repoUrl = `https://github.com/${process.env.GITHUB_REPOSITORY}`;
   const branch = process.env.GITHUB_REF?.replace('refs/heads/', '');
 

@@ -1,22 +1,14 @@
 import { getInput, warning, info } from "@actions/core";
-import { OctokitResponse, ReposGetCommitResponseData } from "@octokit/types";
 import yaml from "yaml";
 
 import { escapeMarkdownTokens, renderActions } from "../utils";
 import { Fact } from "../models";
 import { formatCozyLayout } from "./cozy";
+import { RestEndpointMethodTypes } from "@octokit/rest";
+import { components } from "@octokit/openapi-types";
 
 export function formatFilesToDisplay(
-  files: {
-    additions: number;
-    blob_url: string;
-    changes: number;
-    deletions: number;
-    filename: string;
-    patch: string;
-    raw_url: string;
-    status: string;
-  }[],
+  files: components["schemas"]["diff-entry"][],
   allowedLength: number,
   htmlUrl: string
 ) {
@@ -44,7 +36,7 @@ export function formatFilesToDisplay(
 }
 
 export function formatCompleteLayout(
-  commit: OctokitResponse<ReposGetCommitResponseData>,
+  commit: RestEndpointMethodTypes["repos"]["getCommit"]["response"],
   conclusion: string,
   elapsedSeconds?: number
 ) {
@@ -117,7 +109,7 @@ export function formatCompleteLayout(
       allowedFileLen === "" ? "7" : allowedFileLen
     );
     const filesToDisplay = formatFilesToDisplay(
-      commit.data.files,
+      commit.data.files || [],
       allowedFileLenParsed,
       commit.data.html_url
     );

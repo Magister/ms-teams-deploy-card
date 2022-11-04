@@ -67,7 +67,7 @@ export function submitNotification(webhookBody: WebhookBody) {
 
 export async function formatAndNotify(
   state: "start" | "exit",
-  conclusion = "in_progress",
+  conclusion: string = "in_progress",
   elapsedSeconds?: number
 ) {
   let webhookBody: WebhookBody;
@@ -101,7 +101,7 @@ export async function getWorkflowRunStatus() {
   );
 
   let lastStep;
-  const stoppedStep = job?.steps.find(
+  const stoppedStep = job?.steps?.find(
     (step) =>
       step.conclusion === "failure" ||
       step.conclusion === "timed_out" ||
@@ -112,7 +112,7 @@ export async function getWorkflowRunStatus() {
   if (stoppedStep) {
     lastStep = stoppedStep;
   } else {
-    lastStep = job?.steps.reverse().find((step) => step.status === "completed" && step.conclusion !== 'skipped');
+    lastStep = job?.steps?.reverse().find((step) => step.status === "completed" && step.conclusion !== 'skipped');
   }
 
   const startTime = moment(job?.started_at, moment.ISO_8601);
